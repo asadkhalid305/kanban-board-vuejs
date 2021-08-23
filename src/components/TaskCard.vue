@@ -6,7 +6,9 @@
       <div class="d-flex">
         <p>{{ task.date }}</p>
         <v-spacer></v-spacer>
-        <p>{{task.type}}</p>
+        <p>{{ task.priority }}</p>
+        <v-spacer></v-spacer>
+        <p>{{task.tags}}</p>
       </div>
     </v-card-text>
   </v-card>
@@ -25,7 +27,8 @@ export default {
 
 <style lang="scss" scoped>
 .v-card {
-  .v-card__title, .v-card__description {
+  .v-card__title,
+  .v-card__description {
     word-break: break-word;
   }
 }

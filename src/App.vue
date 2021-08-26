@@ -17,9 +17,6 @@
             <v-card elevation="4">
               <!-- category title -->
               <v-card-title>
-                <!-- <v-row v-if="column.key === 'backlog'" no-gutters> -->
-                  <!-- <v-col cols="5"> -->
-                  <!-- <div></div> -->
                   <v-badge
                     color="black"
                     inline
@@ -30,10 +27,6 @@
                   <v-btn v-if="column.key === 'backlog'" @click="openTaskModal()" icon small color="black">
                     <v-icon dark>mdi-plus</v-icon>
                   </v-btn>
-                  <!-- </v-col> -->
-                  <!-- <v-col>{{column.title}}</v-col> -->
-                <!-- </v-row> -->
-                <!-- <div v-else>{{column.title}}</div> -->
               </v-card-title>
               <!-- category body -->
               <v-card-text class="text-center pt-2">

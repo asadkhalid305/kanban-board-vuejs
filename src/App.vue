@@ -1,9 +1,9 @@
 <template>
   <v-app>
-    <v-app-bar color="black" dark>
+    <v-app-bar app color="#f5f5f5" class dark>
       <v-row>
         <v-col class="text-center">
-          <h1>Kanban Board VueJs</h1>
+          <div class="text-h5 font-weight-bold text-uppercase text--primary">Kanban Board VueJs</div>
         </v-col>
       </v-row>
     </v-app-bar>
@@ -14,36 +14,43 @@
           <!-- iterate each category card -->
           <v-col v-for="column in columns" :key="column.title" cols="3">
             <!-- single category card -->
-            <v-card elevation="3" outline tile>
+            <v-card elevation="4">
               <!-- category title -->
-              <v-card-title
-                :class="[{ 'justify-center': column.key !== 'backlog' },column.color]"
-                :style="`background-color: ${column.color}`"
-              >
-                <v-row v-if="column.key === 'backlog'" no-gutters>
-                  <v-col cols="5">
-                    <v-btn @click="newCardModal = true" outlined fab x-small color="black">
-                      <v-icon dark>mdi-plus</v-icon>
-                    </v-btn>
-                  </v-col>
-                  <v-col>{{column.title}}</v-col>
-                </v-row>
-                <div v-else>{{column.title}}</div>
+              <v-card-title>
+                <!-- <v-row v-if="column.key === 'backlog'" no-gutters> -->
+                  <!-- <v-col cols="5"> -->
+                  <!-- <div></div> -->
+                  <v-badge
+                    color="black"
+                    inline
+                    left
+                    :content="`${column.tasks.length}`"
+                  >{{column.title}}</v-badge>
+                  <v-spacer></v-spacer>
+                  <v-btn v-if="column.key === 'backlog'" @click="openTaskModal()" icon small color="black">
+                    <v-icon dark>mdi-plus</v-icon>
+                  </v-btn>
+                  <!-- </v-col> -->
+                  <!-- <v-col>{{column.title}}</v-col> -->
+                <!-- </v-row> -->
+                <!-- <div v-else>{{column.title}}</div> -->
               </v-card-title>
               <!-- category body -->
               <v-card-text class="text-center pt-2">
-                <div class="category-card-body-scroll pb-2">
+                <div class="pb-2">
                   <!-- Draggable component comes from vuedraggable. It provides drag & drop functionality -->
                   <draggable :list="column.tasks" :animation="200" group="tasks">
                     <!-- Each element from here will be draggable and animated. Note :key is very important here to be unique both for draggable and animations to be smooth & consistent. -->
                     <!-- iterate each task -->
                     <template v-if="column.tasks && column.tasks.length">
                       <task-card
+                        class="mt-3 cursor-move"
                         v-for="(task) in column.tasks"
                         :key="task.id"
                         :task="task"
-                        class="mt-3 cursor-move"
-                      ></task-card>
+                        @onRemove="removeTask"
+                        @onUpdate="openTaskModal"
+                      />
                     </template>
                     <div v-else>No task available</div>
                   </draggable>
@@ -53,30 +60,38 @@
           </v-col>
         </v-row>
       </v-container>
-      <create-task-card
-        v-if="newCardModal"
-        :modal-state.sync="newCardModal"
-        @onSave="createNewCard"
+      <task-card-form
+        v-if="taskModalState"
+        :modal-state.sync="taskModalState"
+        :mode="taskModalMode"
+        :task="taskDetails"
+        @onSave="createOrUpdateTask"
       />
     </v-main>
   </v-app>
 </template>
 
 <script>
+// packages
 import draggable from "vuedraggable";
+
+// components
 import TaskCard from "./components/TaskCard.vue";
-import CreateTaskCard from "./components/CreateTaskCard.vue";
+import TaskCardForm from "./components/TaskCardForm.vue";
+
+// services
+import { constantsService } from "./services/constantsService";
 
 export default {
   name: "App",
   components: {
     TaskCard,
     draggable,
-    CreateTaskCard
+    TaskCardForm
   },
   data() {
     return {
-      newCardModal: false,
+      taskModalState: false,
       columns: [
         {
           title: "Backlog",
@@ -89,27 +104,30 @@ export default {
               description:
                 "Add discount code to checkout page discount code to checkout page discount code to checkout page discount code to checkout page discount code to checkout page",
               date: "Sep 14",
-              tag: "Feature Request"
+              tag: "feature",
+              priority: "highest"
             },
             {
               id: 2,
               title: "Provide documentation on integrations",
               description: "Add discount code to checkout page",
-              date: "Sep 12"
+              date: "Sep 12",
+              priority: "highest"
             },
             {
               id: 3,
               title: "Design shopping cart dropdown",
               description: "Add discount code to checkout page",
               date: "Sep 9",
-              tag: "Design"
+              tag: "Design",
+              priority: "highest"
             },
             {
               id: 4,
               title: "Add discount code to checkout page",
               description: "Add discount code to checkout page",
               date: "Sep 14",
-              tag: "Feature Request"
+              tag: "feature"
             },
             {
               id: 5,
@@ -141,7 +159,7 @@ export default {
               id: 7,
               title: "Add discount code to checkout page",
               date: "Sep 14",
-              tag: "Feature Request"
+              tag: "feature"
             },
             {
               id: 8,
@@ -170,7 +188,7 @@ export default {
               id: 11,
               title: "Add discount code to checkout page",
               date: "Sep 14",
-              tag: "Feature Request"
+              tag: "feature"
             },
             {
               id: 12,
@@ -182,7 +200,7 @@ export default {
               id: 13,
               title: "Add discount code to checkout page",
               date: "Sep 14",
-              tag: "Feature Request"
+              tag: "feature"
             }
           ]
         },
@@ -194,7 +212,7 @@ export default {
               id: 14,
               title: "Add discount code to checkout page",
               date: "Sep 14",
-              tag: "Feature Request"
+              tag: "feature"
             },
             {
               id: 15,
@@ -206,11 +224,13 @@ export default {
               id: 16,
               title: "Add discount code to checkout page",
               date: "Sep 14",
-              tag: "Feature Request"
+              tag: "feature"
             }
           ]
         }
-      ]
+      ],
+      taskModalMode: constantsService.taskModalMode.create,
+      taskDetails: {}
     };
   },
   computed: {
@@ -224,22 +244,49 @@ export default {
     }
   },
   methods: {
-    createNewCard(formData) {
-      const { title, description, priority, tag } = formData;
-      const newTask = {
-        id: Math.random(),
-        title,
-        description,
-        priority,
-        tag,
-        date: this.date
-      };
-      this.columns.forEach(column => {
-        if (column.key === "backlog") {
-          column.tasks.unshift(newTask);
-        }
-      });
+    createOrUpdateTask(formData) {
+      let newTask = {};
+      if (this.taskModalMode === constantsService.taskModalMode.create) {
+        // eslint-disable-next-line no-unused-vars
+        const { id, ...payload } = formData;
+        newTask = { ...payload };
+        newTask.id = Math.random();
+      } else {
+        newTask = formData;
+      }
       // hit POST API
+      // remeove this part
+      this.columns.forEach(column => {
+        if (column.key !== "backlog") {
+          return;
+        }
+        if (this.taskModalMode === constantsService.taskModalMode.create) {
+          column.tasks.unshift(newTask);
+          return;
+        }
+        column.tasks = column.tasks.map(task => {
+          if (task.id !== newTask.id) {
+            return task;
+          }
+          return newTask;
+        });
+      });
+    },
+    removeTask({ id }) {
+      // hit POST API
+      // remove this part
+      this.columns.forEach(column => {
+        column.tasks = column.tasks.filter(task => task.id !== id);
+      });
+    },
+    openTaskModal(task = null) {
+      if (!task) {
+        this.taskModalMode = constantsService.taskModalMode.create;
+      } else {
+        this.taskDetails = task;
+        this.taskModalMode = constantsService.taskModalMode.edit;
+      }
+      this.taskModalState = true;
     }
   }
 };
@@ -253,14 +300,14 @@ export default {
   .col {
     .v-card {
       .v-card__title {
-        padding: 12px;
+        padding: 14px;
         font-size: 18px;
+        background-color: #ffffff;
       }
       .v-card__text {
-        .category-card-body-scroll {
-          overflow-y: auto;
-          height: 82vh;
-        }
+        overflow-y: auto;
+        height: 85vh;
+        background-color: #f5f5f5;
       }
     }
   }

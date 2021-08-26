@@ -52,9 +52,18 @@
 </template>
 
 <script>
+import _cloneDeep from "lodash/cloneDeep";
+
+import { constantsService } from "../services/constantsService";
+
 export default {
   props: {
-    modalState: Boolean
+    modalState: Boolean,
+    mode: Number,
+    task: {
+      type: Object,
+      default: () => ({})
+    }
   },
   data: () => ({
     priorityOptions: [
@@ -79,11 +88,17 @@ export default {
       required: value => !!value || "Required"
     }
   }),
+  created() {
+    if (!this.mode === constantsService.taskModalMode.edit) {
+      return;
+    }
+    this.formData = _cloneDeep(this.task);
+  },
   methods: {
     saveNewCard() {
       this.$emit("onSave", this.formData);
       this.$emit("update:modalState", !this.modalState);
-    },
+    }
   }
 };
 </script>

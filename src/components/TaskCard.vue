@@ -4,11 +4,16 @@
     <v-card-text>
       <div class="mb-4">{{ task.description }}</div>
       <div class="d-flex">
-        <p>{{ task.date }}</p>
+        <v-chip v-show="task.date">{{ task.date }}</v-chip>
+        <v-chip v-show="task.priority" class="ml-1 text-capitalize">{{ task.priority }}</v-chip>
+        <v-chip v-show="task.tag" class="ml-1 text-capitalize">{{task.tag}}</v-chip>
         <v-spacer></v-spacer>
-        <p>{{ task.priority }}</p>
-        <v-spacer></v-spacer>
-        <p>{{task.tags}}</p>
+        <v-btn icon @click="updateTask(task)">
+          <v-icon>mdi-circle-edit-outline</v-icon>
+        </v-btn>
+        <v-btn icon @click="removeTask(task)">
+          <v-icon>mdi-delete</v-icon>
+        </v-btn>
       </div>
     </v-card-text>
   </v-card>
@@ -20,6 +25,14 @@ export default {
     task: {
       type: Object,
       default: () => ({})
+    }
+  },
+  methods: {
+    removeTask({ id }) {
+      this.$emit("onRemove", { id });
+    },
+    updateTask(task) {
+      this.$emit("onUpdate", task);
     }
   }
 };
